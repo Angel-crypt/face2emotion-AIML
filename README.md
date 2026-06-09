@@ -4,6 +4,8 @@ Proyecto enfocado en la clasificación de expresiones faciales en tres emociones
 
 Este repositorio documenta el desarrollo del proyecto estructurado para garantizar la calidad del procesamiento y la solidez del entrenamiento.
 
+Dataset usado: https://www.kaggle.com/datasets/samithsachidanandan/human-face-emotions
+
 ---
 
 ## Estado del Proyecto por Iteraciones
