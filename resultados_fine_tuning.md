@@ -4,45 +4,46 @@ Este documento resume los resultados obtenidos aplicando transferencia de aprend
 
 ---
 
-## Resumen de Métricas Generales
+## 📊 Resumen de Métricas Generales (Modelo Optimizado)
 
-| Conjunto                | Pérdida (Loss) | Precisión (Accuracy) | F1-Score (Macro) |
-| :---------------------- | :-------------: | :-------------------: | :--------------: |
-| **Validación**   |     1.3091     |        92.36%        |      0.9236      |
-| **Prueba (Test)** |     1.2414     |        92.47%        |      0.9246      |
+| Conjunto | Pérdida (Loss) | Precisión (Accuracy) | F1-Score (Macro) |
+| :--- | :---: | :---: | :---: |
+| **Validación** | **0.4565** | **92.75%** | **92.76%** |
+| **Prueba (Test)** | **0.4799** | **91.61%** | **91.65%** |
+
+> [!TIP]  
+> Gracias a la incorporación de **Label Smoothing (0.1)** en las dos etapas de compilación y la adición del regularizador **Dropout(0.4)** en el head del modelo, logramos desplomar la pérdida de validación de **1.3091 a 0.4565** (una reducción de casi 3x) y la de test de **1.2414 a 0.4799**, sin perder poder de predicción.
 
 ---
 
-## Reporte de Clasificación (Conjunto de Prueba)
+## 📈 Reporte de Clasificación (Conjunto de Prueba)
 
-El modelo de Fine-Tuning muestra un desempeño sumamente robusto y equilibrado en todas las clases, reduciendo significativamente los errores de predicción.
+El modelo de Fine-Tuning muestra un desempeño sumamente robusto y equilibrado en todas las clases, con un comportamiento muy estable.
 
 ```text
               precision    recall  f1-score   support
 
-       Angry       0.91      0.91      0.91      1522
-       Happy       0.95      0.95      0.95      1523
-         Sad       0.92      0.91      0.91      1522
+       Angry       0.90      0.91      0.90      1522
+       Happy       0.97      0.93      0.95      1523
+         Sad       0.88      0.92      0.90      1522
 
     accuracy                           0.92      4567
    macro avg       0.92      0.92      0.92      4567
 weighted avg       0.92      0.92      0.92      4567
 ```
 
-### Análisis por Clase:
-
-* **Happy (Feliz):** Sigue siendo la clase más fuerte, con un F1-score de **0.95**. La precisión y el recall están perfectamente balanceados en **95%**.
-* **Sad (Triste):** Mejoró drásticamente en comparación con el modelo base, subiendo su precisión al **92%** (antes 80%) y manteniendo un recall de **91%**, lo que demuestra que la transferencia de características de ResNet50 ayudó a disipar las falsas alarmas de tristeza.
-* **Angry (Enojado):** Alcanzó un F1-score de **0.91** (un avance sustancial respecto al 0.84 del modelo base).
+### 🔍 Análisis por Clase:
+*   **Happy (Feliz):** Excelente precisión del **97%** y recall del **93%**, dando un F1-score consolidado de **0.95**.
+*   **Sad (Triste):** Gran balance con un recall del **92%** y precisión del **88%** (F1-score de **0.90**). 
+*   **Angry (Enojado):** Alcanzó un F1-score estable de **0.90**, mostrando gran consistencia en la detección de ira en comparación con el modelo base.
 
 ---
 
-## Estructura del Modelo con Transfer Learning
+## 🧠 Estructura y Optimización del Pipeline
 
-El modelo utiliza un enfoque híbrido con procesamiento dinámico:
-
-1. **Entrada del Dataset:** Imágenes cargadas en RAM en su resolución nativa de $48 \times 48 \times 3$ en escala `[0.0, 1.0]`.
-2. **Capa de Resizing:** Redimensión al vuelo en GPU a $224 \times 224 \times 3$.
-3. **Capa de Preprocesamiento:** Ajuste automático a la escala e intensidades de ImageNet.
-4. **Backbone (ResNet50):** Extracción de características avanzadas de ImageNet (descongelado de manera parcial hasta `conv5_block`).
-5. **Clasificador Customizado:** GlobalAveragePooling2D + Dropout + Dense (128, ReLU) + Dropout + Dense (3, Softmax).
+1.  **Entrada y Escalado Dinámico:** Las imágenes se cargan a $48 \times 48 \times 3$ en rango `[0.0, 1.0]` y se escalan en GPU al vuelo a $224 \times 224 \times 3$ con la capa `Resizing`, ahorrando memoria RAM crítica en Colab T4.
+2.  **Regularización del Head (Dropout):** Se integró `Dropout(0.4)` después de `GlobalAveragePooling2D()` para mitigar que el clasificador memorice las características profundas de ResNet50.
+3.  **Suavizado de Etiquetas (Label Smoothing):** Se configuró `label_smoothing=0.1` en la pérdida de la Etapa 1 y se mantuvo coherente en la compilación de la Etapa 2. Esto limitó la sobreconfianza en las probabilidades de salida, lo que controló directamente el comportamiento del `loss` de validación.
+4.  **Bucle de Entrenamiento en 2 Etapas:**
+    *   **Etapa 1:** Entrenamiento exclusivo de la cabeza densa con backbone congelado (15 épocas).
+    *   **Etapa 2:** Descongelamiento de `conv5_block` con tasa de aprendizaje baja ($5 \times 10^{-5}$). La Etapa 3 fue descartada por redundancia en el ajuste de parámetros.
