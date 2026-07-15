@@ -8,11 +8,10 @@ Se experimentó con dos enfoques arquitectónicos: una red convolucional (CNN) e
 
 ## Enlaces de Descarga y Modelo Final
 
-El modelo final entrenado con los mejores pesos se encuentra disponible para su descarga en la sección de Releases:
+Los pesos del modelo final entrenado se encuentran disponibles en formato Pickle (.pkl) para su descarga en la sección de Releases:
 
-*   Modelo Final: [face2emotion_resnet50_final.keras](https://github.com/Angel-crypt/face2emotion-AIML/releases/download/v1.0/face2emotion_resnet50_final.keras) (207.73 MB)
-*   Release Oficial: [Release v1.0](https://github.com/Angel-crypt/face2emotion-AIML/releases/tag/v1.0)
-*   SHA-256 Checksum: `3a52d9a348cf91e79e03dedf137bebafdcc547acb3afc5d9f4b7b0df6666e2d5`
+*   Pesos del Modelo: [face2emotion_resnet50_final.pkl](https://github.com/Angel-crypt/face2emotion-AIML/releases/download/v1.0.0/face2emotion_resnet50_final.pkl)
+*   Release Oficial: [Release v1.0.0](https://github.com/Angel-crypt/face2emotion-AIML/releases/tag/v1.0.0)
 
 ---
 
